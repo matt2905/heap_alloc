@@ -39,6 +39,42 @@ void test_tas_malloc_empty(void)
     tas_free(p1);
 }
 
+void test_heap_malloc_example()
+{
+    char *heap = get_tas();
+    char *p1 = tas_malloc(10);
+    int libre = *get_first_libre();
+    // show_tas();
+
+    CU_ASSERT(p1 - 1 == heap);
+    CU_ASSERT(*p1 != FREE_BLOCK);
+
+    CU_ASSERT(libre == 10 + 1);
+    CU_ASSERT(*(heap + libre) == 116);
+    CU_ASSERT(*(heap + libre + 1) == FREE_BLOCK);
+
+    char *p2 = tas_malloc(9);
+    // show_tas();
+
+    libre = *get_first_libre();
+    CU_ASSERT(p2 == heap + 12);
+    CU_ASSERT(*(p2 - 1) == 9);
+    CU_ASSERT(libre == 21);
+
+    char *p3 = tas_malloc(5);
+    // show_tas();
+
+    libre = *get_first_libre();
+    CU_ASSERT(p3 == heap + 22);
+    CU_ASSERT(*(p3 - 1) == 5);
+    CU_ASSERT(libre == 27);
+
+    char *p4 = tas_malloc(101);
+    // show_tas();
+
+    CU_ASSERT(p4 == NULL);
+}
+
 int init_suite(void) { return 0; }
 int clean_suite(void) { return 0; }
 
@@ -61,7 +97,8 @@ int main(void)
     /* add the tests to the suite */
     if (
         NULL == CU_add_test(pSuite, "of test_tas_malloc()", test_tas_malloc) ||
-        NULL == CU_add_test(pSuite, "of test_tas_malloc_empty()", test_tas_malloc_empty))
+        NULL == CU_add_test(pSuite, "of test_tas_malloc_empty()", test_tas_malloc_empty) ||
+        NULL == CU_add_test(pSuite, "of test_heap_malloc_example()", test_heap_malloc_example))
     {
         CU_cleanup_registry();
         return CU_get_error();

@@ -5,7 +5,7 @@
 
 char *get_tas()
 {
-    static char tas[SIZE] = {SIZE - 1, -1};
+    static char tas[SIZE] = {SIZE - 1, FREE_BLOCK};
 
     return tas;
 }
@@ -24,38 +24,54 @@ int *get_first_libre()
     return &index;
 }
 
+void set_first_libre()
+{
+    char *tas;
+    int *first_index;
+
+    tas = get_tas();
+    first_index = get_first_libre();
+    while (tas[*first_index + 1] != FREE_BLOCK)
+    {
+        *first_index += tas[*first_index] + 1;
+    }
+}
+
 char *fragmentation(unsigned taille, int libre)
 {
     int rest;
     char *tas;
     char *ret;
-    int *first_libre;
 
-    first_libre = get_first_libre();
     tas = get_tas();
     rest = tas[libre] - taille - 1;
+    if (!rest)
+        taille++;
     tas[libre] = taille;
     tas[libre + 1] = 0;
     ret = &tas[libre + 1];
     libre += taille + 1;
-    if (rest >= 0)
+    if (rest > 0)
     {
         tas[libre] = rest;
-        *first_libre = libre;
+        tas[libre + 1] = FREE_BLOCK;
     }
-    if (rest > 0)
-        tas[libre + 1] = -1;
+    set_first_libre();
     return ret;
 }
 
 char *tas_malloc(unsigned int taille)
 {
-    t_strategy *strategy;
+    char *tas;
+    t_strategy strategy;
     char *ret;
     int libre;
 
-    strategy = get_strategy();
-    libre = (**strategy)(taille);
+    tas = get_tas();
+    strategy = *get_strategy();
+    libre = (*strategy)(taille);
+    if (!taille)
+        return (&tas[libre + 1]);
     ret = NULL;
     if (libre != -1)
         ret = fragmentation(taille, libre);
@@ -68,7 +84,6 @@ void defragmentation()
     int *first_libre;
     int savelen;
     int saveindex;
-    int increment;
 
     tas = get_tas();
     first_libre = get_first_libre();
@@ -76,8 +91,7 @@ void defragmentation()
     saveindex = -1;
     for (int index = 0; index < SIZE;)
     {
-        increment = tas[index];
-        if (tas[index + 1] == -1 || tas[index] == 0)
+        if (tas[index + 1] == -1)
         {
             if (index < *first_libre)
                 *first_libre = index;
@@ -88,7 +102,6 @@ void defragmentation()
             {
                 savelen += 1;
                 tas[saveindex] = savelen;
-                tas[index] = -1;
             }
         }
         else
@@ -96,7 +109,7 @@ void defragmentation()
             saveindex = -1;
             savelen = 0;
         }
-        index += increment + 1;
+        index += tas[index] + 1;
     }
 }
 
@@ -105,7 +118,7 @@ int tas_free(char *ptr)
     if (ptr)
     {
         if (*(ptr - 1) != 0)
-            *ptr = -1;
+            *ptr = FREE_BLOCK;
         defragmentation();
     }
     return 0;

@@ -6,6 +6,7 @@
 		__typeof__ (b) _b = (b); \
 		_a > _b ? _a : _b; })
 #define SIZE 128
+#define FREE_BLOCK -1
 
 typedef enum e_strategy_type
 {
