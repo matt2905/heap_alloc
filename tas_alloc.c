@@ -78,6 +78,12 @@ char *tas_malloc(unsigned int taille)
     return ret;
 }
 
+static void reset(int *savelen, int *saveindex)
+{
+    *savelen = 0;
+    *saveindex = -1;
+}
+
 void defragmentation()
 {
     char *tas;
@@ -87,8 +93,7 @@ void defragmentation()
 
     tas = get_tas();
     first_libre = get_first_libre();
-    savelen = 0;
-    saveindex = -1;
+    reset(&savelen, &saveindex);
     for (int index = 0; index < SIZE;)
     {
         if (tas[index + 1] == -1)
@@ -105,10 +110,7 @@ void defragmentation()
             }
         }
         else
-        {
-            saveindex = -1;
-            savelen = 0;
-        }
+            reset(&savelen, &saveindex);
         index += tas[index] + 1;
     }
 }
