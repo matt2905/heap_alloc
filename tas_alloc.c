@@ -158,6 +158,8 @@ void tas_free(char *ptr)
             *ptr = *first_libre;
             *first_libre = index;
         }
+        else if (index == *first_libre)
+            return;
         else
         {
             previous_index = get_previous_index(index);

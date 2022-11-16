@@ -135,32 +135,40 @@ void test_heap_free_several()
     char *p2 = tas_malloc(10);
     char *p3 = tas_malloc(10);
     char *p4 = tas_malloc(10);
+    char *p5 = tas_malloc(10);
 
     strcpy(p1, "tp1");
     strcpy(p2, "tp2");
     strcpy(p3, "tp3");
     strcpy(p4, "tp4");
+    strcpy(p5, "tp5");
 
     tas_free(p2); // simple free
 
     libre = *get_first_libre();
     CU_ASSERT(*(p2 - 1) == 10);
-    CU_ASSERT(*(p2) == 44);
+    CU_ASSERT(*(p2) == 55);
     CU_ASSERT(libre == p2 - 1 - heap);
 
-    tas_free(p3); // testing merge left
+    tas_free(p4); // next free
     print_heap();
 
     libre = *get_first_libre();
-    CU_ASSERT(*(p2 - 1) == 21);
-    CU_ASSERT(*(p2) == 44);
+    CU_ASSERT(*(p2) == 33);
+    CU_ASSERT(*(p4) == 55);
+    CU_ASSERT(libre == p2 - 1 - heap);
+
+    tas_free(p3); // testing merge left
+
+    libre = *get_first_libre();
+    CU_ASSERT(*(p2 - 1) == 32);
     CU_ASSERT(libre == p2 - 1 - heap);
 
     tas_free(p1); // testing merge right
 
     libre = *get_first_libre();
-    CU_ASSERT(*(p1 - 1) == 32);
-    CU_ASSERT(*(p1) == 44);
+    CU_ASSERT(*(p1 - 1) == 43);
+    CU_ASSERT(*(p1) == 55);
     CU_ASSERT(libre == 0);
 
     reset_heap();
