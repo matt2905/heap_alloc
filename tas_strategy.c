@@ -31,17 +31,16 @@ static int strategy(unsigned int taille, unsigned int *saved_size, t_strategy_ty
     index = *get_first_libre();
     while (index < SIZE)
     {
+        len = (unsigned int)tas[index];
+        if (strategy_type == WORST)
+            worst_strategy(taille, len, index, &saved_index, saved_size);
+        else if (strategy_type == BEST)
+            best_strategy(taille, len, index, &saved_index, saved_size);
+        else if (strategy_type == FIRST && taille <= len)
+            return index;
         if (tas[index + 1] == -1)
-        {
-            len = (unsigned int)tas[index];
-            if (strategy_type == WORST)
-                worst_strategy(taille, len, index, &saved_index, saved_size);
-            else if (strategy_type == BEST)
-                best_strategy(taille, len, index, &saved_index, saved_size);
-            else if (strategy_type == FIRST && taille <= len)
-                return index;
-        }
-        index += tas[index] + 1;
+            return saved_index;
+        index = tas[index + 1];
     }
     return saved_index;
 }

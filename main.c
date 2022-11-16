@@ -22,7 +22,11 @@ void exemple()
     printf("malloc and write p4\n");
     show_tas();
     tas_free(p1);
+    printf("free p1\n");
+    show_tas();
     tas_free(p3);
+    printf("free p3\n");
+    show_tas();
     tas_free(p4);
     printf("free all\n");
     show_tas();

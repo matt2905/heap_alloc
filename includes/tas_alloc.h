@@ -21,7 +21,7 @@ int *get_first_libre();
 
 char *get_tas();
 char *tas_malloc(unsigned int taille);
-int tas_free(char *ptr);
+void tas_free(char *ptr);
 void show_tas();
 
 int first_fit(unsigned int taille);

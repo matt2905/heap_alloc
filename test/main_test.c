@@ -126,6 +126,46 @@ void test_heap_malloc_example()
     reset_heap();
 }
 
+void test_heap_free_several()
+{
+    char *heap = get_tas();
+    int libre;
+
+    char *p1 = tas_malloc(10);
+    char *p2 = tas_malloc(10);
+    char *p3 = tas_malloc(10);
+    char *p4 = tas_malloc(10);
+
+    strcpy(p1, "tp1");
+    strcpy(p2, "tp2");
+    strcpy(p3, "tp3");
+    strcpy(p4, "tp4");
+
+    tas_free(p2); // simple free
+
+    libre = *get_first_libre();
+    CU_ASSERT(*(p2 - 1) == 10);
+    CU_ASSERT(*(p2) == 44);
+    CU_ASSERT(libre == p2 - 1 - heap);
+
+    tas_free(p3); // testing merge left
+    print_heap();
+
+    libre = *get_first_libre();
+    CU_ASSERT(*(p2 - 1) == 21);
+    CU_ASSERT(*(p2) == 44);
+    CU_ASSERT(libre == p2 - 1 - heap);
+
+    tas_free(p1); // testing merge right
+
+    libre = *get_first_libre();
+    CU_ASSERT(*(p1 - 1) == 32);
+    CU_ASSERT(*(p1) == 44);
+    CU_ASSERT(libre == 0);
+
+    reset_heap();
+}
+
 void test_best_malloc()
 {
     t_strategy *strategy;
@@ -208,6 +248,7 @@ int main(void)
         NULL == CU_add_test(pSuite, "of test_tas_malloc()", test_tas_malloc) ||
         NULL == CU_add_test(pSuite, "of test_tas_malloc_empty()", test_tas_malloc_empty) ||
         NULL == CU_add_test(pSuite, "of test_heap_malloc_example()", test_heap_malloc_example) ||
+        NULL == CU_add_test(pSuite, "of test_heap_free_several()", test_heap_free_several) ||
         NULL == CU_add_test(pSuite, "of test_best_malloc()", test_best_malloc) ||
         NULL == CU_add_test(pSuite, "of test_worst_malloc()", test_worst_malloc))
     {
