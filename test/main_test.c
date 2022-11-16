@@ -1,4 +1,4 @@
-#include "tas_alloc.h"
+#include "heap_alloc.h"
 
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
@@ -6,7 +6,7 @@
 
 void print_heap(void)
 {
-    char *heap = get_tas();
+    char *heap = get_heap();
     int libre = *get_first_libre();
 
     printf("libre = %d\n", libre);
@@ -41,7 +41,7 @@ void print_heap(void)
 
 static void reset_heap()
 {
-    char *heap = get_tas();
+    char *heap = get_heap();
     int *first_libre = get_first_libre();
 
     bzero(heap, SIZE);
@@ -52,11 +52,11 @@ static void reset_heap()
 
 void test_heap_malloc_example()
 {
-    char *heap = get_tas();
-    char *p1 = tas_malloc(10);
+    char *heap = get_heap();
+    char *p1 = heap_malloc(10);
     int libre = *get_first_libre();
     strcpy(p1, "tp 1");
-    // show_tas();
+    // show_heap();
     // print_heap();
 
     CU_ASSERT(p1 - 1 == heap);
@@ -66,8 +66,8 @@ void test_heap_malloc_example()
     CU_ASSERT(*(heap + libre) == 116);
     CU_ASSERT(*(heap + libre + 1) == FREE_BLOCK);
 
-    char *p2 = tas_malloc(9);
-    // show_tas();
+    char *p2 = heap_malloc(9);
+    // show_heap();
     // print_heap();
 
     libre = *get_first_libre();
@@ -75,8 +75,8 @@ void test_heap_malloc_example()
     CU_ASSERT(*(p2 - 1) == 9);
     CU_ASSERT(libre == 21);
 
-    char *p3 = tas_malloc(5);
-    // show_tas();
+    char *p3 = heap_malloc(5);
+    // show_heap();
     // print_heap();
 
     libre = *get_first_libre();
@@ -84,8 +84,8 @@ void test_heap_malloc_example()
     CU_ASSERT(*(p3 - 1) == 5);
     CU_ASSERT(libre == 27);
 
-    char *p4 = tas_malloc(101);
-    // show_tas();
+    char *p4 = heap_malloc(101);
+    // show_heap();
     // print_heap();
 
     CU_ASSERT(p4 == NULL);
@@ -95,14 +95,14 @@ void test_heap_malloc_example()
 
 void test_heap_free_several()
 {
-    char *heap = get_tas();
+    char *heap = get_heap();
     int libre;
 
-    char *p1 = tas_malloc(10);
-    char *p2 = tas_malloc(10);
-    char *p3 = tas_malloc(10);
-    char *p4 = tas_malloc(10);
-    char *p5 = tas_malloc(10);
+    char *p1 = heap_malloc(10);
+    char *p2 = heap_malloc(10);
+    char *p3 = heap_malloc(10);
+    char *p4 = heap_malloc(10);
+    char *p5 = heap_malloc(10);
 
     strcpy(p1, "tp1");
     strcpy(p2, "tp2");
@@ -110,27 +110,27 @@ void test_heap_free_several()
     strcpy(p4, "tp4");
     strcpy(p5, "tp5");
 
-    tas_free(p2); // simple free
+    heap_free(p2); // simple free
 
     libre = *get_first_libre();
     CU_ASSERT(*(p2 - 1) == 10);
     CU_ASSERT(*(p2) == 55);
     CU_ASSERT(libre == p2 - 1 - heap);
 
-    tas_free(p4); // next free
+    heap_free(p4); // next free
 
     libre = *get_first_libre();
     CU_ASSERT(*(p2) == 33);
     CU_ASSERT(*(p4) == 55);
     CU_ASSERT(libre == p2 - 1 - heap);
 
-    tas_free(p3); // testing merge left
+    heap_free(p3); // testing merge left
 
     libre = *get_first_libre();
     CU_ASSERT(*(p2 - 1) == 32);
     CU_ASSERT(libre == p2 - 1 - heap);
 
-    tas_free(p1); // testing merge right
+    heap_free(p1); // testing merge right
 
     libre = *get_first_libre();
     CU_ASSERT(*(p1 - 1) == 43);
@@ -142,21 +142,21 @@ void test_heap_free_several()
 
 void test_full_example()
 {
-    char *heap = get_tas();
+    char *heap = get_heap();
     int libre;
 
-    char *p1 = tas_malloc(10);
-    char *p2 = tas_malloc(9);
-    char *p3 = tas_malloc(5);
+    char *p1 = heap_malloc(10);
+    char *p2 = heap_malloc(9);
+    char *p3 = heap_malloc(5);
 
     strcpy(p1, "tp 1");
     strcpy(p2, "tp 2");
     strcpy(p3, "tp 3");
 
-    tas_free(p2);
+    heap_free(p2);
 
     // That verifies that in case we have 1 byte left we actually malloc size+1
-    char *p4 = tas_malloc(8);
+    char *p4 = heap_malloc(8);
     strcpy(p4, "systeme");
 
     print_heap();
@@ -176,33 +176,33 @@ void test_full_example()
     reset_heap();
 }
 
-void test_tas_malloc(void)
+void test_heap_malloc(void)
 {
     char *p1, *p2, *p3, *p4;
 
-    p1 = (char *)tas_malloc(10);
+    p1 = (char *)heap_malloc(10);
     strcpy(p1, "tp 1");
     CU_ASSERT(strcmp(p1, "tp 1") == 0);
 
-    p2 = (char *)tas_malloc(9);
+    p2 = (char *)heap_malloc(9);
     strcpy(p2, "tp 2");
     CU_ASSERT(strcmp(p2, "tp 2") == 0);
 
-    p3 = (char *)tas_malloc(5);
+    p3 = (char *)heap_malloc(5);
     strcpy(p3, "tp 3");
     CU_ASSERT(strcmp(p3, "tp 3") == 0);
 
-    p4 = (char *)tas_malloc(200);
+    p4 = (char *)heap_malloc(200);
     CU_ASSERT(p4 == NULL);
 
     reset_heap();
 }
 
-void test_tas_malloc_empty(void)
+void test_heap_malloc_empty(void)
 {
     char *p1;
 
-    p1 = (char *)tas_malloc(1);
+    p1 = (char *)heap_malloc(1);
     strcpy(p1, "\0");
     CU_ASSERT(strcmp(p1, "") == 0);
 
@@ -216,20 +216,20 @@ void test_best_malloc()
     strategy = get_strategy();
     *strategy = &best_fit;
 
-    char *p1 = tas_malloc(20);
-    char *p2 = tas_malloc(10);
-    char *p3 = tas_malloc(20);
-    char *p4 = tas_malloc(8);
-    char *p5 = tas_malloc(10);
+    char *p1 = heap_malloc(20);
+    char *p2 = heap_malloc(10);
+    char *p3 = heap_malloc(20);
+    char *p4 = heap_malloc(8);
+    char *p5 = heap_malloc(10);
 
     strcpy(p1, "tp 1");
     strcpy(p2, "tp 2");
     strcpy(p3, "tp 3");
     strcpy(p4, "tp 4");
     strcpy(p5, "tp 5");
-    tas_free(p2);
-    tas_free(p4);
-    p2 = tas_malloc(5);
+    heap_free(p2);
+    heap_free(p4);
+    p2 = heap_malloc(5);
     strcpy(p2, "tp 2");
 
     CU_ASSERT(p2 == p4);
@@ -246,20 +246,20 @@ void test_worst_malloc()
     strategy = get_strategy();
     *strategy = &worst_fit;
 
-    char *p1 = tas_malloc(20);
-    char *p2 = tas_malloc(10);
-    char *p3 = tas_malloc(20);
-    char *p4 = tas_malloc(8);
-    char *p5 = tas_malloc(10);
+    char *p1 = heap_malloc(20);
+    char *p2 = heap_malloc(10);
+    char *p3 = heap_malloc(20);
+    char *p4 = heap_malloc(8);
+    char *p5 = heap_malloc(10);
 
     strcpy(p1, "tp 1");
     strcpy(p2, "tp 2");
     strcpy(p3, "tp 3");
     strcpy(p4, "tp 4");
     strcpy(p5, "tp 5");
-    tas_free(p2);
-    tas_free(p4);
-    p2 = tas_malloc(5);
+    heap_free(p2);
+    heap_free(p4);
+    p2 = heap_malloc(5);
     strcpy(p2, "tp 2");
 
     CU_ASSERT(p2 == p5 + 11);
@@ -305,8 +305,8 @@ int main(void)
         return CU_get_error();
     }
     if (
-        NULL == CU_add_test(pSuite, "of test_tas_malloc()", test_tas_malloc) ||
-        NULL == CU_add_test(pSuite, "of test_tas_malloc_empty()", test_tas_malloc_empty) ||
+        NULL == CU_add_test(pSuite, "of test_heap_malloc()", test_heap_malloc) ||
+        NULL == CU_add_test(pSuite, "of test_heap_malloc_empty()", test_heap_malloc_empty) ||
         NULL == CU_add_test(pSuite, "of test_best_malloc()", test_best_malloc) ||
         NULL == CU_add_test(pSuite, "of test_worst_malloc()", test_worst_malloc))
     {
