@@ -61,7 +61,6 @@ void defrag_free()
     show_tas();
 }
 
-#include <stdlib.h>
 int main(void)
 {
     t_strategy *strategy;

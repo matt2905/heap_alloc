@@ -2,7 +2,8 @@ CC			?= gcc
 CFLAGS		+= -Wall -Wextra --pedantic -Werror
 
 SRC			= tas_alloc.c \
-			  tas_strategy.c
+			  tas_strategy.c \
+			  tas_set_first.c
 MSRCS		= main.c
 TESTSRCS	= test/main_test.c \
  

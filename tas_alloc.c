@@ -1,6 +1,4 @@
-#include <stddef.h>
 #include <stdio.h>
-
 #include "tas_alloc.h"
 
 char *get_tas()
@@ -24,63 +22,24 @@ int *get_first_libre()
     return &index;
 }
 
-void set_first_libre(int taille, int index, int rest)
-{
-    char *tas;
-    int *first_index;
-
-    tas = get_tas();
-    first_index = get_first_libre();
-    if (index == *first_index)
-    {
-        if (rest)
-        {
-            *first_index = index + taille + 1;
-            tas[*first_index] = rest;
-            tas[*first_index + 1] = tas[index + 1];
-        }
-        else
-        {
-            *first_index = tas[index + 1];
-        }
-    }
-    else if (tas[*first_index + 1] == -1)
-    {
-        *first_index = index + taille + 1;
-        tas[*first_index] = rest;
-        tas[*first_index + 1] = -1;
-    }
-    else
-    {
-        if (rest)
-        {
-            tas[index + taille + 1] = rest;
-            tas[index + taille + 2] = tas[index + 1];
-            tas[*first_index + 1] = index + taille + 1;
-        }
-        else
-            tas[*first_index + 1] = tas[index + 1];
-    }
-}
-
-char *fragmentation(unsigned taille, int index)
+char *fragmentation(unsigned size, int index)
 {
     int rest;
     char *tas;
     char *ret;
 
     tas = get_tas();
-    rest = tas[index] - taille - 1;
+    rest = tas[index] - size - 1;
     if (!rest)
-        taille++;
-    set_first_libre(taille, index, rest);
-    tas[index] = taille;
+        size++;
+    set_first_libre(size, index, rest);
+    tas[index] = size;
     tas[index + 1] = 0;
     ret = tas + index + 1;
     return ret;
 }
 
-char *tas_malloc(unsigned int taille)
+char *tas_malloc(unsigned int size)
 {
     char *tas;
     t_strategy strategy;
@@ -89,15 +48,23 @@ char *tas_malloc(unsigned int taille)
 
     tas = get_tas();
     strategy = *get_strategy();
-    libre = (*strategy)(taille);
-    if (!taille)
-        return (&tas[libre + 1]);
+    libre = (*strategy)(size);
+    if (!size)
+        return (tas + libre + 1);
     ret = NULL;
     if (libre != -1)
-        ret = fragmentation(taille, libre);
+        ret = fragmentation(size, libre);
     return ret;
 }
 
+/**
+ * @brief this function merge consecutive free block.
+ *
+ * TODO: optimization:
+ *          at the moment: run through all free block.
+ *          need to be: check only the previous and next block.
+ *
+ */
 void defragmentation()
 {
     char *tas;
@@ -141,6 +108,12 @@ int get_previous_index(int index)
     return previous_libre;
 }
 
+/**
+ * @brief this function add at address +1, the index of the next free block
+ *        and save the first free block.
+ *
+ * @param ptr, address of memory that need to be free.
+ */
 void tas_free(char *ptr)
 {
     char *tas;
@@ -153,13 +126,13 @@ void tas_free(char *ptr)
         tas = get_tas();
         first_libre = get_first_libre();
         index = ptr - tas - 1;
+        if (index == *first_libre)
+            return;
         if (index < *first_libre)
         {
             *ptr = *first_libre;
             *first_libre = index;
         }
-        else if (index == *first_libre)
-            return;
         else
         {
             previous_index = get_previous_index(index);
