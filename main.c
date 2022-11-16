@@ -2,6 +2,10 @@
 #include <string.h>
 #include "heap_alloc.h"
 
+/**
+ * @brief test given in the doc
+ *
+ */
 void exemple()
 {
     char *p1, *p2, *p3, *p4;
@@ -32,6 +36,10 @@ void exemple()
     show_heap();
 }
 
+/**
+ * @brief test to merging memory on free
+ *
+ */
 void defrag_free()
 {
     char *p1, *p2, *p3, *p4;
@@ -61,6 +69,11 @@ void defrag_free()
     show_heap();
 }
 
+/**
+ * @brief use the two test for each strategy
+ *
+ * @return int
+ */
 int main(void)
 {
     t_strategy *strategy;

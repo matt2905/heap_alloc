@@ -2,11 +2,10 @@
 
 /**
  * @brief this function reallocate the first free block
- *        and move the first index of free block to the next one
  *
- * @param size
- * @param index
- * @param rest
+ * @param size size required by user
+ * @param index index of the FREE BLOCK found
+ * @param rest free size after fragmentation
  */
 static void realloc_first(int size, int index, int rest)
 {
@@ -14,7 +13,7 @@ static void realloc_first(int size, int index, int rest)
     int *first_index;
 
     heap = get_heap();
-    first_index = get_first_libre();
+    first_index = get_first_free_index();
     if (rest)
     {
         *first_index = index + size + 1;
@@ -28,9 +27,9 @@ static void realloc_first(int size, int index, int rest)
 /**
  * @brief this function is used when the first free block is also the last one
  *
- * @param size
- * @param index
- * @param rest
+ * @param size size required by user
+ * @param index index of the FREE BLOCK found
+ * @param rest free size after fragmentation
  */
 static void realloc_last(int size, int index, int rest)
 {
@@ -38,7 +37,7 @@ static void realloc_last(int size, int index, int rest)
     int *first_index;
 
     heap = get_heap();
-    first_index = get_first_libre();
+    first_index = get_first_free_index();
     *first_index = index + size + 1;
     heap[*first_index] = rest;
     heap[*first_index + 1] = -1;
@@ -47,9 +46,9 @@ static void realloc_last(int size, int index, int rest)
 /**
  * @brief This function is used to redefined the pointer to the next free block
  *
- * @param size
- * @param index
- * @param rest
+ * @param size size required by user
+ * @param index index of the FREE BLOCK found
+ * @param rest free size after fragmentation
  */
 static void realloc_general(int size, int index, int rest)
 {
@@ -57,7 +56,7 @@ static void realloc_general(int size, int index, int rest)
     int *first_index;
 
     heap = get_heap();
-    first_index = get_first_libre();
+    first_index = get_first_free_index();
     if (rest)
     {
         heap[index + size + 1] = rest;
@@ -69,19 +68,19 @@ static void realloc_general(int size, int index, int rest)
 }
 
 /**
- * @brief Set the first libre object
+ * @brief Set the index of first FREE BLOCK object
  *
- * @param size
- * @param index
- * @param rest
+ * @param size size required by user
+ * @param index index of the FREE BLOCK found
+ * @param rest free size after fragmentation
  */
-void set_first_libre(int size, int index, int rest)
+void set_first_free_index(int size, int index, int rest)
 {
     char *heap;
     int *first_index;
 
     heap = get_heap();
-    first_index = get_first_libre();
+    first_index = get_first_free_index();
     if (index == *first_index)
         realloc_first(size, index, rest);
     else if (heap[*first_index + 1] == -1)

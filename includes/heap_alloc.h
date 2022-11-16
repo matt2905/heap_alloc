@@ -1,3 +1,6 @@
+#ifndef HEAP_ALLOC_H
+#define HEAP_ALLOC_H
+
 /**
  * @file heap_alloc.h
  * @author mmartin
@@ -7,8 +10,6 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef HEAP_ALLOC_H
-#define HEAP_ALLOC_H
 
 /**
  * @def SIZE
@@ -41,9 +42,14 @@ typedef enum e_strategy_type
 	WORST
 } t_strategy_type;
 
+/**
+ * @brief Function pointer for use the chossen strategy
+ *
+ */
 typedef int (*t_strategy)(unsigned int size);
+
 t_strategy *get_strategy();
-int *get_first_libre();
+int *get_first_free_index();
 
 char *get_heap();
 char *heap_malloc(unsigned int size);
@@ -54,6 +60,6 @@ int first_fit(unsigned int size);
 int best_fit(unsigned int size);
 int worst_fit(unsigned int size);
 
-void set_first_libre(int size, int index, int rest);
+void set_first_free_index(int size, int index, int rest);
 
 #endif

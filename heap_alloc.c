@@ -26,11 +26,11 @@ t_strategy *get_strategy()
 }
 
 /**
- * @brief Get the first libre object
+ * @brief Get the first free index object
  *
- * @return int*
+ * @return int* the index of the first FREE BLOCK
  */
-int *get_first_libre()
+int *get_first_free_index()
 {
     static int index;
 
@@ -40,9 +40,9 @@ int *get_first_libre()
 /**
  * @brief function use to split a free block memory
  *
- * @param size
- * @param index
- * @return char*
+ * @param size size required by user
+ * @param index index of the FREE BLOCK found
+ * @return char* a pointer to the first block allocated to user
  */
 char *fragmentation(unsigned size, int index)
 {
@@ -54,7 +54,7 @@ char *fragmentation(unsigned size, int index)
     rest = heap[index] - size - 1;
     if (!rest)
         size++;
-    set_first_libre(size, index, rest);
+    set_first_free_index(size, index, rest);
     heap[index] = size;
     heap[index + 1] = 0;
     ret = heap + index + 1;
@@ -64,77 +64,75 @@ char *fragmentation(unsigned size, int index)
 /**
  * @brief main function that allocate zone
  *
- * @param size
- * @return char*
+ * @param size sizer required by user
+ * @return char* a pointer to the first block allocated to user
  */
 char *heap_malloc(unsigned int size)
 {
     char *heap;
     t_strategy strategy;
     char *ret;
-    int libre;
+    int index;
 
     heap = get_heap();
     strategy = *get_strategy();
-    libre = (*strategy)(size);
+    index = (*strategy)(size);
     if (!size)
-        return (heap + libre + 1);
+        return (heap + index + 1);
     ret = NULL;
-    if (libre != -1)
-        ret = fragmentation(size, libre);
+    if (index != -1)
+        ret = fragmentation(size, index);
     return ret;
 }
 
 /**
  * @brief Get the previous index
  *
- * @param index
- * @return int
+ * @param index current index
+ * @return int previous index
  */
 int get_previous_index(int index)
 {
     char *heap;
-    int first_libre;
-    int previous_libre;
+    int first_index;
+    int previous_index;
 
     heap = get_heap();
-    first_libre = *get_first_libre();
-    previous_libre = *get_first_libre();
-    while (first_libre < index)
+    first_index = *get_first_free_index();
+    previous_index = *get_first_free_index();
+    while (first_index < index)
     {
-        if (previous_libre != first_libre)
-        {
-            previous_libre = first_libre;
-        }
-        first_libre = heap[first_libre + 1];
+        if (previous_index != first_index)
+            previous_index = first_index;
+        first_index = heap[first_index + 1];
     }
-    return previous_libre;
+    return previous_index;
 }
 
 /**
  * @brief this function try to try to merge two block selected
  *
- * @param previous_index
- * @param next_index
+ * @param current_index index of the first block
+ * @param next_index index of the second block
  */
-static void merge(int previous_index, int next_index)
+static void merge(int current_index, int next_index)
 {
     char *heap;
     int size;
 
     heap = get_heap();
-    size = (heap + next_index) - (heap + previous_index) - 1;
-    if (size == heap[previous_index])
+    size = (heap + next_index) - (heap + current_index) - 1;
+    if (size == heap[current_index])
     {
-        heap[previous_index] += heap[next_index] + 1;
-        heap[previous_index + 1] = heap[next_index + 1];
+        heap[current_index] += heap[next_index] + 1;
+        heap[current_index + 1] = heap[next_index + 1];
     }
 }
 
 /**
  * @brief this function merge right then left free block.
  *
- * @param index
+ * @param index index of the current block
  */
 void defragmentation(int index)
 {
@@ -150,29 +148,28 @@ void defragmentation(int index)
 }
 
 /**
- * @brief this function add at address +1, the index of the next free block
- *        and save the first free block.
+ * @brief main function that free an allocated zone
  *
- * @param ptr, address of memory that need to be free.
+ * @param ptr address of memory that need to be free.
  */
 void heap_free(char *ptr)
 {
     char *heap;
-    int *first_libre;
+    int *first_index;
     int index;
     int previous_index;
 
     if (!ptr)
         return;
     heap = get_heap();
-    first_libre = get_first_libre();
+    first_index = get_first_free_index();
     index = ptr - heap - 1;
-    if (index == *first_libre)
+    if (index == *first_index)
         return;
-    if (index < *first_libre)
+    if (index < *first_index)
     {
-        *ptr = *first_libre;
-        *first_libre = index;
+        *ptr = *first_index;
+        *first_index = index;
     }
     else
     {
@@ -190,13 +187,13 @@ void heap_free(char *ptr)
 void show_heap()
 {
     char *heap;
-    int *first_libre;
+    int *first_index;
     int index;
     int size;
 
     heap = get_heap();
-    first_libre = get_first_libre();
-    printf("first bloc libre: %d\n", *first_libre);
+    first_index = get_first_free_index();
+    printf("first FREE BLOCK index: %d\n", *first_index);
     printf("show heap:\n");
     index = 0;
     while (index < SIZE)

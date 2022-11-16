@@ -4,12 +4,16 @@
 #include <CUnit/Basic.h>
 #include <ctype.h>
 
+/**
+ * @brief another method to print the heap
+ *
+ */
 void print_heap(void)
 {
     char *heap = get_heap();
-    int libre = *get_first_libre();
+    int index = *get_first_free_index();
 
-    printf("libre = %d\n", libre);
+    printf("index = %d\n", index);
     int i, j;
     for (i = 0; i < 8; i++)
     {
@@ -42,19 +46,23 @@ void print_heap(void)
 static void reset_heap()
 {
     char *heap = get_heap();
-    int *first_libre = get_first_libre();
+    int *first_index = get_first_free_index();
 
     bzero(heap, SIZE);
     heap[0] = SIZE - 1;
     heap[1] = FREE_BLOCK;
-    *first_libre = 0;
+    *first_index = 0;
 }
 
+/**
+ * @brief test with CUNIT of the first part example given in the doc
+ *
+ */
 void test_heap_malloc_example()
 {
     char *heap = get_heap();
     char *p1 = heap_malloc(10);
-    int libre = *get_first_libre();
+    int index = *get_first_free_index();
     strcpy(p1, "tp 1");
     // show_heap();
     // print_heap();
@@ -62,27 +70,27 @@ void test_heap_malloc_example()
     CU_ASSERT(p1 - 1 == heap);
     CU_ASSERT(*p1 != FREE_BLOCK);
 
-    CU_ASSERT(libre == 10 + 1);
-    CU_ASSERT(*(heap + libre) == 116);
-    CU_ASSERT(*(heap + libre + 1) == FREE_BLOCK);
+    CU_ASSERT(index == 10 + 1);
+    CU_ASSERT(*(heap + index) == 116);
+    CU_ASSERT(*(heap + index + 1) == FREE_BLOCK);
 
     char *p2 = heap_malloc(9);
     // show_heap();
     // print_heap();
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(p2 == heap + 12);
     CU_ASSERT(*(p2 - 1) == 9);
-    CU_ASSERT(libre == 21);
+    CU_ASSERT(index == 21);
 
     char *p3 = heap_malloc(5);
     // show_heap();
     // print_heap();
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(p3 == heap + 22);
     CU_ASSERT(*(p3 - 1) == 5);
-    CU_ASSERT(libre == 27);
+    CU_ASSERT(index == 27);
 
     char *p4 = heap_malloc(101);
     // show_heap();
@@ -93,10 +101,14 @@ void test_heap_malloc_example()
     reset_heap();
 }
 
+/**
+ * @brief test with CUNIT of the merging memory right and left
+ *
+ */
 void test_heap_free_several()
 {
     char *heap = get_heap();
-    int libre;
+    int index;
 
     char *p1 = heap_malloc(10);
     char *p2 = heap_malloc(10);
@@ -112,38 +124,42 @@ void test_heap_free_several()
 
     heap_free(p2); // simple free
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(*(p2 - 1) == 10);
     CU_ASSERT(*(p2) == 55);
-    CU_ASSERT(libre == p2 - 1 - heap);
+    CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p4); // next free
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(*(p2) == 33);
     CU_ASSERT(*(p4) == 55);
-    CU_ASSERT(libre == p2 - 1 - heap);
+    CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p3); // testing merge left
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(*(p2 - 1) == 32);
-    CU_ASSERT(libre == p2 - 1 - heap);
+    CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p1); // testing merge right
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(*(p1 - 1) == 43);
     CU_ASSERT(*(p1) == 55);
-    CU_ASSERT(libre == 0);
+    CU_ASSERT(index == 0);
 
     reset_heap();
 }
 
+/**
+ * @brief test with CUNIT of the example given in the doc
+ *
+ */
 void test_full_example()
 {
     char *heap = get_heap();
-    int libre;
+    int index;
 
     char *p1 = heap_malloc(10);
     char *p2 = heap_malloc(9);
@@ -161,11 +177,11 @@ void test_full_example()
 
     print_heap();
 
-    libre = *get_first_libre();
+    index = *get_first_free_index();
     CU_ASSERT(*(p1 - 1) == 10);
     CU_ASSERT(*(p4 - 1) == 9);
     CU_ASSERT(*(p3 - 1) == 5);
-    CU_ASSERT(libre == 27);
+    CU_ASSERT(index == 27);
     CU_ASSERT(heap[27] == 100);
     CU_ASSERT(heap[28] == -1);
 
@@ -176,6 +192,10 @@ void test_full_example()
     reset_heap();
 }
 
+/**
+ * @brief test with CUNIT of some random allocation
+ *
+ */
 void test_heap_malloc(void)
 {
     char *p1, *p2, *p3, *p4;
@@ -195,13 +215,6 @@ void test_heap_malloc(void)
     p4 = (char *)heap_malloc(200);
     CU_ASSERT(p4 == NULL);
 
-    reset_heap();
-}
-
-void test_heap_malloc_empty(void)
-{
-    char *p1;
-
     p1 = (char *)heap_malloc(1);
     strcpy(p1, "\0");
     CU_ASSERT(strcmp(p1, "") == 0);
@@ -209,6 +222,10 @@ void test_heap_malloc_empty(void)
     reset_heap();
 }
 
+/**
+ * @brief test with CUNIT of best fit strategy
+ *
+ */
 void test_best_malloc()
 {
     t_strategy *strategy;
@@ -239,6 +256,10 @@ void test_best_malloc()
     *strategy = &first_fit;
 }
 
+/**
+ * @brief test with CUNIT of worst fit strategy
+ *
+ */
 void test_worst_malloc()
 {
     t_strategy *strategy;
@@ -269,9 +290,13 @@ void test_worst_malloc()
     *strategy = &first_fit;
 }
 
-int init_suite(void) { return 0; }
-int clean_suite(void) { return 0; }
+static int init_suite(void) { return 0; }
+static int clean_suite(void) { return 0; }
 
+/**
+ * @brief program test with CUNIT
+ *
+ */
 int main(void)
 {
     CU_pSuite pSuite = NULL;
