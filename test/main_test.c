@@ -331,7 +331,6 @@ int main(void)
     }
     if (
         NULL == CU_add_test(pSuite, "of test_heap_malloc()", test_heap_malloc) ||
-        NULL == CU_add_test(pSuite, "of test_heap_malloc_empty()", test_heap_malloc_empty) ||
         NULL == CU_add_test(pSuite, "of test_best_malloc()", test_best_malloc) ||
         NULL == CU_add_test(pSuite, "of test_worst_malloc()", test_worst_malloc))
     {
