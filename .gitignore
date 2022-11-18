@@ -44,6 +44,9 @@ test_*
 *.idb
 *.pdb
 
+# Documentation
+html/
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
