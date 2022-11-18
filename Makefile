@@ -15,6 +15,8 @@ MOBJ		= $(patsubst %.c, $(DOBJ)%.o, $(MSRCS))
 TESTOBJ		= $(patsubst %.c, $(DOBJ)%.o, $(TESTSRCS))
 DEPENDS		= -MT $@ -MMD -MP -MF $(subst .o,.d,$@)
 
+DOXYGEN := $(shell command -v doxygen 2> /dev/null)
+
 all: $(NAME)
 
 $(NAME):		$(OBJ) $(MOBJ)
@@ -38,11 +40,20 @@ clean:
 	@/bin/rm -rf $(DOBJ)
 	@echo "\033[31m"Objects of $(NAME) : deleted"\033[0m"
 
+docs:
+ifndef DOXYGEN
+	@echo "\033[31mPlease install doxygen with apt-get install doxygen on a terminal\033[0m"
+else
+	@doxygen Doxyfile_config
+	@echo "\033[32mDocumentation successfully generated \033[0m"
+endif
+
 fclean:			clean
 	@/bin/rm -f $(NAME) test_*
 	@/bin/rm -rf $(NAME).dSYM
+	@/bin/rm -rf html/
 	@echo "\033[31m"$(NAME) : deleted"\033[0m"
 
 re:				fclean all
 
-.PHONY:			all clean re
+.PHONY:			all clean docs re
