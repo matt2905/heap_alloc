@@ -2,42 +2,6 @@
 #include "heap_alloc.h"
 
 /**
- * @brief Get the heap object
- *
- * @return char*
- */
-char *get_heap()
-{
-    static char heap[SIZE] = {SIZE - 1, FREE_BLOCK};
-
-    return heap;
-}
-
-/**
- * @brief Get the strategy object
- *
- * @return t_strategy*
- */
-t_strategy *get_strategy()
-{
-    static t_strategy strategy = &first_fit;
-
-    return &strategy;
-}
-
-/**
- * @brief Get the first free index object
- *
- * @return int* the index of the first FREE BLOCK
- */
-int *get_first_free_index()
-{
-    static int index;
-
-    return &index;
-}
-
-/**
  * @brief function use to split a free block memory
  *
  * @param size size required by user
@@ -54,7 +18,7 @@ char *fragmentation(unsigned size, int index)
     rest = heap[index] - size - 1;
     if (!rest)
         size++;
-    set_first_free_index(size, index, rest);
+    allocate_first_free_index(size, index, rest);
     heap[index] = size;
     heap[index + 1] = 0;
     ret = heap + index + 1;
@@ -98,8 +62,8 @@ int get_previous_index(int index)
     int previous_index;
 
     heap = get_heap();
-    first_index = *get_first_free_index();
-    previous_index = *get_first_free_index();
+    first_index = get_first_free_index();
+    previous_index = get_first_free_index();
     while (first_index < index)
     {
         if (previous_index != first_index)
@@ -155,7 +119,7 @@ void defragmentation(int index)
 void heap_free(char *ptr)
 {
     char *heap;
-    int *first_index;
+    int first_index;
     int index;
     int previous_index;
 
@@ -164,12 +128,12 @@ void heap_free(char *ptr)
     heap = get_heap();
     first_index = get_first_free_index();
     index = ptr - heap - 1;
-    if (index == *first_index)
+    if (index == first_index)
         return;
-    if (index < *first_index)
+    if (index < first_index)
     {
-        *ptr = *first_index;
-        *first_index = index;
+        *ptr = first_index;
+        set_first_free_index(index);
     }
     else
     {
@@ -187,13 +151,13 @@ void heap_free(char *ptr)
 void show_heap()
 {
     char *heap;
-    int *first_index;
+    int first_index;
     int index;
     int size;
 
     heap = get_heap();
     first_index = get_first_free_index();
-    printf("first FREE BLOCK index: %d\n", *first_index);
+    printf("first FREE BLOCK index: %d\n", first_index);
     printf("show heap:\n");
     index = 0;
     while (index < SIZE)

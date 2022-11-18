@@ -3,7 +3,8 @@ CFLAGS		+= -Wall -Wextra --pedantic -Werror
 
 SRC			= heap_alloc.c \
 			  heap_strategy.c \
-			  heap_set_first.c
+			  heap_set_first.c \
+			  heap_global.c
 MSRCS		= main.c
 TESTSRCS	= test/main_test.c \
  

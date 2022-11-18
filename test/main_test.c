@@ -11,7 +11,7 @@
 void print_heap(void)
 {
     char *heap = get_heap();
-    int index = *get_first_free_index();
+    int index = get_first_free_index();
 
     printf("index = %d\n", index);
     int i, j;
@@ -46,12 +46,12 @@ void print_heap(void)
 static void reset_heap()
 {
     char *heap = get_heap();
-    int *first_index = get_first_free_index();
 
     bzero(heap, SIZE);
     heap[0] = SIZE - 1;
     heap[1] = FREE_BLOCK;
-    *first_index = 0;
+    set_first_free_index(0);
+    set_strategy(&first_fit);
 }
 
 /**
@@ -62,7 +62,7 @@ void test_heap_malloc_example()
 {
     char *heap = get_heap();
     char *p1 = heap_malloc(10);
-    int index = *get_first_free_index();
+    int index = get_first_free_index();
     strcpy(p1, "tp 1");
     // show_heap();
     // print_heap();
@@ -78,7 +78,7 @@ void test_heap_malloc_example()
     // show_heap();
     // print_heap();
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(p2 == heap + 12);
     CU_ASSERT(*(p2 - 1) == 9);
     CU_ASSERT(index == 21);
@@ -87,7 +87,7 @@ void test_heap_malloc_example()
     // show_heap();
     // print_heap();
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(p3 == heap + 22);
     CU_ASSERT(*(p3 - 1) == 5);
     CU_ASSERT(index == 27);
@@ -124,27 +124,27 @@ void test_heap_free_several()
 
     heap_free(p2); // simple free
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(*(p2 - 1) == 10);
     CU_ASSERT(*(p2) == 55);
     CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p4); // next free
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(*(p2) == 33);
     CU_ASSERT(*(p4) == 55);
     CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p3); // testing merge left
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(*(p2 - 1) == 32);
     CU_ASSERT(index == p2 - 1 - heap);
 
     heap_free(p1); // testing merge right
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(*(p1 - 1) == 43);
     CU_ASSERT(*(p1) == 55);
     CU_ASSERT(index == 0);
@@ -177,7 +177,7 @@ void test_full_example()
 
     print_heap();
 
-    index = *get_first_free_index();
+    index = get_first_free_index();
     CU_ASSERT(*(p1 - 1) == 10);
     CU_ASSERT(*(p4 - 1) == 9);
     CU_ASSERT(*(p3 - 1) == 5);
@@ -228,10 +228,7 @@ void test_heap_malloc(void)
  */
 void test_best_malloc()
 {
-    t_strategy *strategy;
-
-    strategy = get_strategy();
-    *strategy = &best_fit;
+    set_strategy(&best_fit);
 
     char *p1 = heap_malloc(20);
     char *p2 = heap_malloc(10);
@@ -253,7 +250,6 @@ void test_best_malloc()
     CU_ASSERT(*(p2 - 1) == 5);
 
     reset_heap();
-    *strategy = &first_fit;
 }
 
 /**
@@ -262,10 +258,7 @@ void test_best_malloc()
  */
 void test_worst_malloc()
 {
-    t_strategy *strategy;
-
-    strategy = get_strategy();
-    *strategy = &worst_fit;
+    set_strategy(&worst_fit);
 
     char *p1 = heap_malloc(20);
     char *p2 = heap_malloc(10);
@@ -287,7 +280,6 @@ void test_worst_malloc()
     CU_ASSERT(*(p2 - 1) == 5);
 
     reset_heap();
-    *strategy = &first_fit;
 }
 
 static int init_suite(void) { return 0; }

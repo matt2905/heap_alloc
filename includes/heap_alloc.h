@@ -48,8 +48,10 @@ typedef enum e_strategy_type
  */
 typedef int (*t_strategy)(unsigned int size);
 
-t_strategy *get_strategy();
-int *get_first_free_index();
+t_strategy get_strategy();
+void set_strategy(t_strategy new_strategy);
+int get_first_free_index();
+void set_first_free_index();
 
 char *get_heap();
 char *heap_malloc(unsigned int size);
@@ -60,6 +62,6 @@ int first_fit(unsigned int size);
 int best_fit(unsigned int size);
 int worst_fit(unsigned int size);
 
-void set_first_free_index(int size, int index, int rest);
+void allocate_first_free_index(int size, int index, int rest);
 
 #endif

@@ -54,7 +54,7 @@ static int strategy(unsigned int size, unsigned int *saved_size, t_strategy_type
 
     heap = get_heap();
     saved_index = -1;
-    index = *get_first_free_index();
+    index = get_first_free_index();
     while (index < SIZE)
     {
         len = (unsigned int)heap[index];

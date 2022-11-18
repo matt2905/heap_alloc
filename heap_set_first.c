@@ -10,18 +10,19 @@
 static void realloc_first(int size, int index, int rest)
 {
     char *heap;
-    int *first_index;
+    int first_index;
 
     heap = get_heap();
     first_index = get_first_free_index();
     if (rest)
     {
-        *first_index = index + size + 1;
-        heap[*first_index] = rest;
-        heap[*first_index + 1] = heap[index + 1];
+        first_index = index + size + 1;
+        set_first_free_index(first_index);
+        heap[first_index] = rest;
+        heap[first_index + 1] = heap[index + 1];
     }
     else
-        *first_index = heap[index + 1];
+        set_first_free_index(heap[index + 1]);
 }
 
 /**
@@ -34,13 +35,14 @@ static void realloc_first(int size, int index, int rest)
 static void realloc_last(int size, int index, int rest)
 {
     char *heap;
-    int *first_index;
+    int first_index;
 
     heap = get_heap();
     first_index = get_first_free_index();
-    *first_index = index + size + 1;
-    heap[*first_index] = rest;
-    heap[*first_index + 1] = -1;
+    first_index = index + size + 1;
+    set_first_free_index(first_index);
+    heap[first_index] = rest;
+    heap[first_index + 1] = -1;
 }
 
 /**
@@ -53,7 +55,7 @@ static void realloc_last(int size, int index, int rest)
 static void realloc_general(int size, int index, int rest)
 {
     char *heap;
-    int *first_index;
+    int first_index;
 
     heap = get_heap();
     first_index = get_first_free_index();
@@ -61,10 +63,10 @@ static void realloc_general(int size, int index, int rest)
     {
         heap[index + size + 1] = rest;
         heap[index + size + 2] = heap[index + 1];
-        heap[*first_index + 1] = index + size + 1;
+        heap[first_index + 1] = index + size + 1;
     }
     else
-        heap[*first_index + 1] = heap[index + 1];
+        heap[first_index + 1] = heap[index + 1];
 }
 
 /**
@@ -74,16 +76,16 @@ static void realloc_general(int size, int index, int rest)
  * @param index index of the FREE BLOCK found
  * @param rest free size after fragmentation
  */
-void set_first_free_index(int size, int index, int rest)
+void allocate_first_free_index(int size, int index, int rest)
 {
     char *heap;
-    int *first_index;
+    int first_index;
 
     heap = get_heap();
     first_index = get_first_free_index();
-    if (index == *first_index)
+    if (index == first_index)
         realloc_first(size, index, rest);
-    else if (heap[*first_index + 1] == -1)
+    else if (heap[first_index + 1] == -1)
         realloc_last(size, index, rest);
     else
         realloc_general(size, index, rest);

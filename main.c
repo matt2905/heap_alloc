@@ -76,18 +76,15 @@ void defrag_free()
  */
 int main(void)
 {
-    t_strategy *strategy;
-
-    strategy = get_strategy();
     printf("\033[0;31m FIRST_FIT strategy: \033[0m\n");
     exemple();
     defrag_free();
     printf("\033[0;31m WORST_FIT strategy: \033[0m\n");
-    *strategy = &worst_fit;
+    set_strategy(&worst_fit);
     exemple();
     defrag_free();
     printf("\033[0;31m BEST_FIT strategy: \033[0m\n");
-    *strategy = &best_fit;
+    set_strategy(&best_fit);
     exemple();
     defrag_free();
     return (0);
