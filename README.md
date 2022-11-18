@@ -16,6 +16,16 @@ You can generate doxygen documentations if you have doxygen installed with:
     make docs
 ```
 
+You can clean the folder compiled object with:
+```console
+    make clean
+```
+
+You can clean the folder of documentation and compiled object with:
+```console
+    make fclean
+```
+
 ## Doxygen:
 If you have doxygen, you can generate html documentation with
 this command in a terminal:
