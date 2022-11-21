@@ -35,12 +35,17 @@
 *.i*86
 *.x86_64
 *.hex
+heap_alloc
+test_*
 
 # Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
+
+# Documentation
+html/
 
 # Kernel Module Compile Results
 *.mod*
