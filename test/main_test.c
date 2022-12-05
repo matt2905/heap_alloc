@@ -11,11 +11,9 @@
 void print_heap(void)
 {
     char *heap = get_heap();
-    int index = get_first_free_index();
 
-    printf("index = %d\n", index);
     int i, j;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 64; i++)
     {
         for (j = 0; j < 16; j++)
         {
@@ -46,11 +44,17 @@ void print_heap(void)
 static void reset_heap()
 {
     char *heap = get_heap();
+    t_list first;
 
     bzero(heap, SIZE);
-    heap[0] = SIZE - 1;
-    heap[1] = FREE_BLOCK;
-    set_first_free_index(0);
+    if (heap[0] == 0)
+    {
+        first = (t_list)heap;
+        first->size = (SIZE - sizeof(*first));
+        first->next = NULL;
+        first->previous = NULL;
+    }
+    set_first_free_block(first);
     set_strategy(&first_fit);
 }
 
@@ -60,39 +64,44 @@ static void reset_heap()
  */
 void test_heap_malloc_example()
 {
-    char *heap = get_heap();
+    char *heap = (char *)get_heap();
     char *p1 = heap_malloc(10);
-    int index = get_first_free_index();
+    t_list free_block = get_first_free_block();
+    t_list current_block;
+    int struct_size = sizeof(*free_block);
+    int index = (char *)free_block - heap;
     strcpy(p1, "tp 1");
     // show_heap();
     // print_heap();
 
-    CU_ASSERT(p1 - 1 == heap);
-    CU_ASSERT(*p1 != FREE_BLOCK);
+    CU_ASSERT(p1 - struct_size == heap);
 
-    CU_ASSERT(index == 10 + 1);
-    CU_ASSERT(*(heap + index) == 116);
-    CU_ASSERT(*(heap + index + 1) == FREE_BLOCK);
+    CU_ASSERT(index == 10 + struct_size);
+    CU_ASSERT(*(heap + struct_size) == 116);
 
     char *p2 = heap_malloc(9);
+    strcpy(p2, "tp 2");
     // show_heap();
     // print_heap();
 
-    index = get_first_free_index();
-    CU_ASSERT(p2 == heap + 12);
-    CU_ASSERT(*(p2 - 1) == 9);
-    CU_ASSERT(index == 21);
+    CU_ASSERT(p2 == heap + index + struct_size);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p2 - struct_size);
+    CU_ASSERT(current_block->size == 9);
+    CU_ASSERT(index == 67);
 
     char *p3 = heap_malloc(5);
+    strcpy(p3, "tp 3");
     // show_heap();
     // print_heap();
 
-    index = get_first_free_index();
-    CU_ASSERT(p3 == heap + 22);
-    CU_ASSERT(*(p3 - 1) == 5);
-    CU_ASSERT(index == 27);
+    CU_ASSERT(p3 == heap + index + struct_size);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p3 - struct_size);
+    CU_ASSERT(current_block->size == 5);
+    CU_ASSERT(index == 96);
 
-    char *p4 = heap_malloc(101);
+    char *p4 = heap_malloc(905);
     // show_heap();
     // print_heap();
 
@@ -105,10 +114,14 @@ void test_heap_malloc_example()
  * @brief test with CUNIT of the merging memory right and left
  *
  */
+
 void test_heap_free_several()
 {
-    char *heap = get_heap();
+    char *heap = (char *)get_heap();
+    t_list current_block;
+    int struct_size = sizeof(*current_block);
     int index;
+    int next_index;
 
     char *p1 = heap_malloc(10);
     char *p2 = heap_malloc(10);
@@ -124,29 +137,39 @@ void test_heap_free_several()
 
     heap_free(p2); // simple free
 
-    index = get_first_free_index();
-    CU_ASSERT(*(p2 - 1) == 10);
-    CU_ASSERT(*(p2) == 55);
-    CU_ASSERT(index == p2 - 1 - heap);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p2 - struct_size);
+    next_index = (char *)current_block->next - heap;
+    CU_ASSERT(current_block->size == 10);
+    CU_ASSERT(next_index == 170);
+    CU_ASSERT(index == p2 - struct_size - heap);
 
     heap_free(p4); // next free
 
-    index = get_first_free_index();
-    CU_ASSERT(*(p2) == 33);
-    CU_ASSERT(*(p4) == 55);
-    CU_ASSERT(index == p2 - 1 - heap);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p2 - struct_size);
+    next_index = (char *)current_block->next - heap;
+    CU_ASSERT(next_index == 102);
+    current_block = (t_list)(p4 - struct_size);
+    next_index = (char *)current_block->next - heap;
+    CU_ASSERT(next_index == 170);
+    CU_ASSERT(index == p2 - struct_size - heap);
 
     heap_free(p3); // testing merge left
 
-    index = get_first_free_index();
-    CU_ASSERT(*(p2 - 1) == 32);
-    CU_ASSERT(index == p2 - 1 - heap);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p2 - struct_size);
+    next_index = (char *)current_block->next - heap;
+    CU_ASSERT(next_index == 170);
+    CU_ASSERT(index == p2 - struct_size - heap);
 
     heap_free(p1); // testing merge right
 
-    index = get_first_free_index();
-    CU_ASSERT(*(p1 - 1) == 43);
-    CU_ASSERT(*(p1) == 55);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p1 - struct_size);
+    next_index = (char *)current_block->next - heap;
+    CU_ASSERT(current_block->size == 112);
+    CU_ASSERT(next_index == 170);
     CU_ASSERT(index == 0);
 
     reset_heap();
@@ -156,10 +179,13 @@ void test_heap_free_several()
  * @brief test with CUNIT of the example given in the doc
  *
  */
+
 void test_full_example()
 {
     char *heap = get_heap();
     int index;
+    t_list current_block;
+    int struct_size = sizeof(*current_block);
 
     char *p1 = heap_malloc(10);
     char *p2 = heap_malloc(9);
@@ -175,15 +201,14 @@ void test_full_example()
     char *p4 = heap_malloc(8);
     strcpy(p4, "systeme");
 
-    print_heap();
-
-    index = get_first_free_index();
-    CU_ASSERT(*(p1 - 1) == 10);
-    CU_ASSERT(*(p4 - 1) == 9);
-    CU_ASSERT(*(p3 - 1) == 5);
-    CU_ASSERT(index == 27);
-    CU_ASSERT(heap[27] == 100);
-    CU_ASSERT(heap[28] == -1);
+    index = (char *)get_first_free_block() - heap;
+    current_block = (t_list)(p1 - struct_size);
+    CU_ASSERT(current_block->size == 10);
+    current_block = (t_list)(p4 - struct_size);
+    CU_ASSERT(current_block->size == 9);
+    current_block = (t_list)(p3 - struct_size);
+    CU_ASSERT(current_block->size == 5);
+    CU_ASSERT(index == 96);
 
     CU_ASSERT(strcmp(p1, "tp 1") == 0);
     CU_ASSERT(strcmp(p3, "tp 3") == 0);
@@ -196,6 +221,7 @@ void test_full_example()
  * @brief test with CUNIT of some random allocation
  *
  */
+
 void test_heap_malloc(void)
 {
     char *p1, *p2, *p3, *p4;
@@ -212,7 +238,7 @@ void test_heap_malloc(void)
     strcpy(p3, "tp 3");
     CU_ASSERT(strcmp(p3, "tp 3") == 0);
 
-    p4 = (char *)heap_malloc(200);
+    p4 = (char *)heap_malloc(2000);
     CU_ASSERT(p4 == NULL);
 
     p1 = (char *)heap_malloc(1);
@@ -226,8 +252,12 @@ void test_heap_malloc(void)
  * @brief test with CUNIT of best fit strategy
  *
  */
+
 void test_best_malloc()
 {
+    t_list current_block;
+    int struct_size = sizeof(*current_block);
+
     set_strategy(&best_fit);
 
     char *p1 = heap_malloc(20);
@@ -247,7 +277,9 @@ void test_best_malloc()
     strcpy(p2, "tp 2");
 
     CU_ASSERT(p2 == p4);
-    CU_ASSERT(*(p2 - 1) == 5);
+    current_block = (t_list)(p2 - struct_size);
+    printf("%ld\n", current_block->size);
+    CU_ASSERT(current_block->size == 8);
 
     reset_heap();
 }
@@ -256,8 +288,12 @@ void test_best_malloc()
  * @brief test with CUNIT of worst fit strategy
  *
  */
+
 void test_worst_malloc()
 {
+    t_list current_block;
+    int struct_size = sizeof(*current_block);
+
     set_strategy(&worst_fit);
 
     char *p1 = heap_malloc(20);
@@ -276,8 +312,10 @@ void test_worst_malloc()
     p2 = heap_malloc(5);
     strcpy(p2, "tp 2");
 
-    CU_ASSERT(p2 == p5 + 11);
-    CU_ASSERT(*(p2 - 1) == 5);
+    CU_ASSERT(p2 == p5 + 10 + struct_size);
+    current_block = (t_list)(p2 - struct_size);
+    printf("%ld\n", current_block->size);
+    CU_ASSERT(current_block->size == 5);
 
     reset_heap();
 }

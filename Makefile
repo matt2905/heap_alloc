@@ -1,5 +1,5 @@
 CC			?= gcc
-CFLAGS		+= -Wall -Wextra --pedantic -Werror
+CFLAGS		+= -Wall -Wextra --pedantic -Werror -g
 
 SRC			= heap_alloc.c \
 			  heap_strategy.c \

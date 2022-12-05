@@ -5,11 +5,19 @@
  *
  * @return char*
  */
-char *get_heap()
+void *get_heap()
 {
-    static char heap[SIZE] = {SIZE - 1, FREE_BLOCK};
+    static char heap[SIZE] = {0};
+    t_list first;
 
-    return heap;
+    if (heap[0] == 0)
+    {
+        first = (t_list)heap;
+        first->size = (SIZE - sizeof(*first));
+        first->next = NULL;
+        first->previous = NULL;
+    }
+    return (void *)heap;
 }
 
 /**
@@ -46,34 +54,36 @@ void set_strategy(t_strategy new_strategy)
 }
 
 /**
- * @brief first free index object
+ * @brief first free bloc object
  *
  * @return t_strategy*
  */
-static int *parametized_first_free_index()
+static t_list *parametized_first_free_block()
 {
-    static int index;
+    static t_list free_block = NULL;
 
-    return &index;
+    if (!free_block)
+        free_block = get_heap();
+    return &free_block;
 }
 
 /**
- * @brief Get the first free index object
+ * @brief Get the first free bloc object
  *
  * @return int
  */
-int get_first_free_index()
+t_list get_first_free_block()
 {
-    return *parametized_first_free_index();
+    return *parametized_first_free_block();
 }
 
 /**
- * @brief Set the first free index object
+ * @brief Set the first free bloc object
  */
-void set_first_free_index(int new_index)
+void set_first_free_block(t_list new_free)
 {
-    int *old_index;
+    t_list *old_free;
 
-    old_index = parametized_first_free_index();
-    *old_index = new_index;
+    old_free = parametized_first_free_block();
+    *old_free = new_free;
 }

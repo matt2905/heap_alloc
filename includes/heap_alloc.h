@@ -1,6 +1,7 @@
 #ifndef HEAP_ALLOC_H
 #define HEAP_ALLOC_H
 
+#include <stddef.h>
 /**
  * @file heap_alloc.h
  * @author mmartin
@@ -15,12 +16,15 @@
  * @def SIZE
  * @brief Define the size max of the heap
  */
-#define SIZE 128
-/**
- * @def FREE_BLOCK
- * @brief Define the last free block
- */
-#define FREE_BLOCK -1
+#define SIZE 1024
+
+struct s_list
+{
+	size_t size;
+	struct s_list *previous;
+	struct s_list *next;
+};
+typedef struct s_list *t_list;
 
 /**
  * @enum t_strategy_type
@@ -46,22 +50,22 @@ typedef enum e_strategy_type
  * @brief Function pointer for use the chossen strategy
  *
  */
-typedef int (*t_strategy)(unsigned int size);
+typedef t_list (*t_strategy)(size_t size);
 
 t_strategy get_strategy();
 void set_strategy(t_strategy new_strategy);
-int get_first_free_index();
-void set_first_free_index();
+t_list get_first_free_block();
+void set_first_free_block(t_list new_free);
 
-char *get_heap();
-char *heap_malloc(unsigned int size);
-void heap_free(char *ptr);
+void *get_heap();
+void *heap_malloc(size_t size);
+void heap_free(void *ptr);
 void show_heap();
 
-int first_fit(unsigned int size);
-int best_fit(unsigned int size);
-int worst_fit(unsigned int size);
+t_list first_fit(size_t size);
+t_list best_fit(size_t size);
+t_list worst_fit(size_t size);
 
-void allocate_first_free_index(int size, int index, int rest);
+void allocate_first_free_block(size_t size, t_list free_block, int rest);
 
 #endif

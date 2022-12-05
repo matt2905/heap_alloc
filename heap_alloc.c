@@ -6,23 +6,22 @@
  *
  * @param size size required by user
  * @param index index of the FREE BLOCK found
- * @return char* a pointer to the first block allocated to user
+ * @return void* a pointer to the first block allocated to user
  */
-char *fragmentation(unsigned size, int index)
+void *fragmentation(size_t size, t_list free_block)
 {
     int rest;
-    char *heap;
+    t_list current_block;
     char *ret;
 
-    heap = get_heap();
-    rest = heap[index] - size - 1;
-    if (!rest)
-        size++;
-    allocate_first_free_index(size, index, rest);
-    heap[index] = size;
-    heap[index + 1] = 0;
-    ret = heap + index + 1;
-    return ret;
+    current_block = (void *)free_block;
+    rest = free_block->size - size - sizeof(*free_block);
+    if (rest <= 0)
+        size = free_block->size;
+    allocate_first_free_block(size, free_block, rest);
+    current_block->size = size;
+    ret = (char *)current_block + sizeof(*current_block);
+    return (void *)ret;
 }
 
 /**
@@ -31,84 +30,76 @@ char *fragmentation(unsigned size, int index)
  * @param size sizer required by user
  * @return char* a pointer to the first block allocated to user
  */
-char *heap_malloc(unsigned int size)
+void *heap_malloc(size_t size)
 {
-    char *heap;
     t_strategy strategy;
-    char *ret;
-    int index;
+    void *ret;
+    t_list free_block;
 
-    heap = get_heap();
     strategy = *get_strategy();
-    index = (*strategy)(size);
+    free_block = (*strategy)(size);
     if (!size)
-        return (heap + index + 1);
+        return NULL;
     ret = NULL;
-    if (index != -1)
-        ret = fragmentation(size, index);
+    if (free_block)
+        ret = fragmentation(size, free_block);
     return ret;
 }
 
 /**
- * @brief Get the previous index
+ * @brief Get the previous block
  *
- * @param index current index
- * @return int previous index
+ * @param current_block current block
+ * @return t_list previous block
  */
-int get_previous_index(int index)
+t_list get_previous_block(t_list current_block)
 {
-    char *heap;
-    int first_index;
-    int previous_index;
+    t_list first_block;
+    t_list previous_block;
 
-    heap = get_heap();
-    first_index = get_first_free_index();
-    previous_index = get_first_free_index();
-    while (first_index < index)
+    first_block = get_first_free_block();
+    previous_block = get_first_free_block();
+    while (current_block - first_block < 0)
     {
-        if (previous_index != first_index)
-            previous_index = first_index;
-        first_index = heap[first_index + 1];
+        if (previous_block != first_block)
+            previous_block = first_block;
+        first_block = first_block->next;
     }
-    return previous_index;
+    return previous_block;
 }
 
 /**
  * @brief this function try to try to merge two block selected
  *
- * @param current_index index of the first block
- * @param next_index index of the second block
+ * @param current_block pointer of the first block
+ * @param next_block pointer of the second block
  */
-static void merge(int current_index, int next_index)
+static void merge(t_list current_block, t_list next_block)
 {
-    char *heap;
-    int size;
+    size_t size;
 
-    heap = get_heap();
-    size = (heap + next_index) - (heap + current_index) - 1;
-    if (size == heap[current_index])
+    size = (char *)next_block - (char *)current_block - sizeof(*current_block);
+    if (size == current_block->size)
     {
-        heap[current_index] += heap[next_index] + 1;
-        heap[current_index + 1] = heap[next_index + 1];
+        current_block->size += next_block->size + sizeof(*next_block);
+        current_block->next = next_block->next;
     }
 }
 
 /**
  * @brief this function merge right then left free block.
  *
- * @param index index of the current block
+ * @param index pointer of the current block
  */
-void defragmentation(int index)
+void defragmentation(t_list current_block)
 {
-    char *heap;
-    int previous_index;
-    int next_index;
+    t_list previous_block;
+    t_list next_block;
 
-    heap = get_heap();
-    previous_index = get_previous_index(index);
-    next_index = heap[index + 1];
-    merge(index, next_index);
-    merge(previous_index, index);
+    previous_block = get_previous_block(current_block);
+    next_block = current_block->next;
+    merge(current_block, next_block);
+    merge(previous_block, current_block);
 }
 
 /**
@@ -116,32 +107,37 @@ void defragmentation(int index)
  *
  * @param ptr address of memory that need to be free.
  */
-void heap_free(char *ptr)
+void heap_free(void *ptr)
 {
-    char *heap;
-    int first_index;
-    int index;
-    int previous_index;
+    char *current;
+    t_list current_block;
+    t_list first_block;
+    t_list previous_block;
 
     if (!ptr)
         return;
-    heap = get_heap();
-    first_index = get_first_free_index();
-    index = ptr - heap - 1;
-    if (index == first_index)
+    current = (char *)ptr - sizeof(*current_block);
+    current_block = (t_list)current;
+    *(char *)ptr = -1;
+    first_block = get_first_free_block();
+    if (current_block == first_block)
         return;
-    if (index < first_index)
+    if (current_block - first_block < 0)
     {
-        *ptr = first_index;
-        set_first_free_index(index);
+        current_block->next = first_block;
+        current_block->previous = NULL;
+        first_block->previous = current_block;
+        set_first_free_block(current_block);
     }
     else
     {
-        previous_index = get_previous_index(index);
-        *ptr = heap[previous_index + 1];
-        heap[previous_index + 1] = index;
+        previous_block = get_previous_block(current_block);
+        current_block->next = previous_block->next;
+        current_block->previous = previous_block;
+        current_block->next->previous = current_block;
+        previous_block->next = current_block;
     }
-    defragmentation(index);
+    defragmentation(current_block);
 }
 
 /**
@@ -150,20 +146,22 @@ void heap_free(char *ptr)
  */
 void show_heap()
 {
-    char *heap;
-    int first_index;
+    char *first_index;
+    char *ptr;
+    char *content;
     int index;
     int size;
 
-    heap = get_heap();
-    first_index = get_first_free_index();
-    printf("first FREE BLOCK index: %d\n", first_index);
+    ptr = (char *)(get_heap());
+    first_index = (char *)get_first_free_block();
+    printf("first FREE BLOCK index: %ld\n", first_index - ptr);
     printf("show heap:\n");
     index = 0;
     while (index < SIZE)
     {
-        size = heap[index];
-        printf("    index: %d, size = %d, content: %.*s\n", index, size, size, heap + index + 1);
-        index += size + 1;
+        size = ((t_list)(ptr + index))->size;
+        content = (char *)((ptr + index) + sizeof(struct s_list));
+        printf("    index: %d, size = %d, content: %.*s\n", index, size, size, content);
+        index += size + sizeof(struct s_list);
     }
 }
