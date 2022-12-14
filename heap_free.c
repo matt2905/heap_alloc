@@ -1,4 +1,5 @@
 #include "heap_alloc.h"
+#include "heap_sem.h"
 
 /**
  * @brief Get the previous block
@@ -70,6 +71,7 @@ void heap_free(void *ptr)
 
     if (!ptr)
         return;
+    heap_lock();
     current = (char *)ptr - sizeof(*current_block);
     current_block = (t_list)current;
     *(char *)ptr = -1;
@@ -92,4 +94,5 @@ void heap_free(void *ptr)
         previous_block->next = current_block;
     }
     defragmentation(current_block);
+    heap_unlock();
 }

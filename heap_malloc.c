@@ -1,4 +1,5 @@
 #include "heap_alloc.h"
+#include "heap_sem.h"
 
 /**
  * @brief function use to split a free block memory
@@ -36,11 +37,13 @@ void *heap_malloc(size_t size)
     t_list free_block;
 
     strategy = *get_strategy();
+    heap_lock();
     free_block = (*strategy)(size);
     if (!size)
         return NULL;
     ret = NULL;
     if (free_block)
         ret = fragmentation(size, free_block);
+    heap_unlock();
     return ret;
 }
