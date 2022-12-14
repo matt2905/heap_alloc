@@ -2,6 +2,8 @@ CC			?= gcc
 CFLAGS		+= -Wall -Wextra --pedantic -Werror -g
 
 SRC			= heap_alloc.c \
+			  heap_malloc.c \
+			  heap_free.c \
 			  heap_strategy.c \
 			  heap_set_first.c \
 			  heap_global.c

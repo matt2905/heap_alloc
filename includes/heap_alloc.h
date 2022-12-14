@@ -1,7 +1,6 @@
 #ifndef HEAP_ALLOC_H
 #define HEAP_ALLOC_H
 
-#include <stddef.h>
 /**
  * @file heap_alloc.h
  * @author mmartin
@@ -11,6 +10,8 @@
  * @copyright Copyright (c) 2022
  *
  */
+
+#include <stddef.h>
 
 /**
  * @def SIZE
