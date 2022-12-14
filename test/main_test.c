@@ -168,7 +168,7 @@ void test_heap_free_several()
     index = (char *)get_first_free_block() - heap;
     current_block = (t_list)(p1 - struct_size);
     next_index = (char *)current_block->next - heap;
-    CU_ASSERT_EQUAL(current_block->size, 112);
+    CU_ASSERT_EQUAL(current_block->size, 40 + struct_size * 3);
     CU_ASSERT_EQUAL(next_index, 50 + struct_size * 5);
     CU_ASSERT_EQUAL(index, 0);
 
@@ -278,7 +278,6 @@ void test_best_malloc()
 
     CU_ASSERT_PTR_EQUAL(p2, p4);
     current_block = (t_list)(p2 - struct_size);
-    printf("%ld\n", current_block->size);
     CU_ASSERT_EQUAL(current_block->size, 8);
 
     reset_heap();
@@ -314,7 +313,6 @@ void test_worst_malloc()
 
     CU_ASSERT_EQUAL(p2, p5 + 10 + struct_size);
     current_block = (t_list)(p2 - struct_size);
-    printf("%ld\n", current_block->size);
     CU_ASSERT_EQUAL(current_block->size, 5);
 
     reset_heap();
