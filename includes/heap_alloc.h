@@ -1,5 +1,5 @@
-#ifndef HEAP_ALLOC_H
-#define HEAP_ALLOC_H
+#ifndef __HEAP_ALLOC_H__
+#define __HEAP_ALLOC_H__
 
 /**
  * @file heap_alloc.h
@@ -59,4 +59,4 @@ t_list first_fit(size_t size);
 t_list best_fit(size_t size);
 t_list worst_fit(size_t size);
 
-#endif
+#endif /* __HEAP_ALLOC_H__ */

@@ -1,4 +1,5 @@
 #include "heap_alloc.h"
+#include "heap_logger.h"
 #include "heap_sem.h"
 
 /**
@@ -52,7 +53,10 @@ void *heap_malloc(size_t size)
         return NULL;
     ret = NULL;
     if (free_block)
+    {
         ret = fragmentation(size, free_block);
+        write_log("malloced", free_block->size, ret);
+    }
     heap_unlock();
     return ret;
 }

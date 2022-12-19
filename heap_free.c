@@ -1,4 +1,5 @@
 #include "heap_alloc.h"
+#include "heap_logger.h"
 #include "heap_sem.h"
 
 /**
@@ -50,6 +51,7 @@ void heap_free(void *ptr)
         return;
     heap_lock();
     current_block = (t_list)((char *)ptr - sizeof(*current_block));
+    write_log("freed", current_block->size, ptr);
     *(char *)ptr = -1;
     first_block = get_first_free_block();
     if (current_block == first_block)

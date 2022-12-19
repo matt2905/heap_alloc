@@ -46,6 +46,7 @@ test_*
 
 # Documentation
 html/
+log
 
 # Kernel Module Compile Results
 *.mod*
