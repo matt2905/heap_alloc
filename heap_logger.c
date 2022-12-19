@@ -8,7 +8,7 @@ void clean_log(void)
 
     if (log_file == NULL)
     {
-        fprintf(stderr, "logger can't open log file\n");
+        fprintf(stderr, "clean logger can't open log file\n");
         exit(0);
     }
     fclose(log_file);
@@ -22,7 +22,7 @@ void write_log(char *action, size_t size, void *ptr)
 
     if (log_file == NULL)
     {
-        fprintf(stderr, "logger can't open log file\n");
+        fprintf(stderr, "write logger can't open log file\n");
         exit(0);
     }
     fprintf(log_file, "[%02d/%02d/%04d][%02d:%02d:%02d] %s %ld bytes at address %p\n",
@@ -42,7 +42,7 @@ void read_log(void)
 
     if (log_file == NULL)
     {
-        fprintf(stderr, "logger can't open log file\n");
+        fprintf(stderr, "read logger can't open log file\n");
         exit(0);
     }
     while (ret != EOF)
