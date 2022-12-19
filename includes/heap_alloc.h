@@ -4,28 +4,20 @@
 /**
  * @file heap_alloc.h
  * @author mmartin
- * @version 0.1
+ * @version 0.5
  * @date 2022-11-16
  *
  * @copyright Copyright (c) 2022
  *
  */
 
-#include <stddef.h>
+#include "heap_list.h"
 
 /**
  * @def SIZE
  * @brief Define the size max of the heap
  */
 #define SIZE 1024
-
-struct s_list
-{
-	size_t size;
-	struct s_list *previous;
-	struct s_list *next;
-};
-typedef struct s_list *t_list;
 
 /**
  * @enum t_strategy_type
@@ -66,7 +58,5 @@ void show_heap();
 t_list first_fit(size_t size);
 t_list best_fit(size_t size);
 t_list worst_fit(size_t size);
-
-void allocate_first_free_block(size_t size, t_list free_block, int rest);
 
 #endif

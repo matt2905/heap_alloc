@@ -18,7 +18,16 @@ void *fragmentation(size_t size, t_list free_block)
     rest = free_block->size - size - sizeof(*free_block);
     if (rest <= 0)
         size = free_block->size;
-    allocate_first_free_block(size, free_block, rest);
+    if (rest > 0)
+    {
+        t_list new_block;
+
+        new_block = (t_list)((char *)free_block + size + sizeof(*free_block));
+        new_block->size = rest;
+        replace_elem_by(free_block, new_block);
+    }
+    else
+        remove_elem(free_block);
     current_block->size = size;
     ret = (char *)current_block + sizeof(*current_block);
     return (void *)ret;

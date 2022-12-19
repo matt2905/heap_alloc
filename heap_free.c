@@ -2,28 +2,6 @@
 #include "heap_sem.h"
 
 /**
- * @brief Get the previous block
- *
- * @param current_block current block
- * @return t_list previous block
- */
-t_list get_previous_block(t_list current_block)
-{
-    t_list first_block;
-    t_list previous_block;
-
-    first_block = get_first_free_block();
-    previous_block = get_first_free_block();
-    while (current_block - first_block < 0)
-    {
-        if (previous_block != first_block)
-            previous_block = first_block;
-        first_block = first_block->next;
-    }
-    return previous_block;
-}
-
-/**
  * @brief this function try to try to merge two block selected
  *
  * @param current_block pointer of the first block
@@ -64,7 +42,6 @@ void defragmentation(t_list current_block)
  */
 void heap_free(void *ptr)
 {
-    char *current;
     t_list current_block;
     t_list first_block;
     t_list previous_block;
@@ -72,26 +49,17 @@ void heap_free(void *ptr)
     if (!ptr)
         return;
     heap_lock();
-    current = (char *)ptr - sizeof(*current_block);
-    current_block = (t_list)current;
+    current_block = (t_list)((char *)ptr - sizeof(*current_block));
     *(char *)ptr = -1;
     first_block = get_first_free_block();
     if (current_block == first_block)
         return;
     if (current_block - first_block < 0)
-    {
-        current_block->next = first_block;
-        current_block->previous = NULL;
-        first_block->previous = current_block;
-        set_first_free_block(current_block);
-    }
+        prepend(current_block, first_block);
     else
     {
         previous_block = get_previous_block(current_block);
-        current_block->next = previous_block->next;
-        current_block->previous = previous_block;
-        current_block->next->previous = current_block;
-        previous_block->next = current_block;
+        add_after(current_block, previous_block);
     }
     defragmentation(current_block);
     heap_unlock();

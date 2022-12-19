@@ -16,25 +16,17 @@ void print_heap(void)
     for (i = 0; i < 64; i++)
     {
         for (j = 0; j < 16; j++)
-        {
             printf("%4d", j + 16 * i);
-        }
         printf("\n");
         for (j = 0; j < 16; j++)
-        {
             printf("%4d", heap[j + 16 * i]);
-        }
         printf("\n");
         for (j = 0; j < 16; j++)
         {
             if (isprint(heap[j + 16 * i]))
-            {
                 printf("%4c", heap[j + 16 * i]);
-            }
             else
-            {
                 printf("    ");
-            }
         }
         printf("\n\n");
     }
@@ -114,7 +106,6 @@ void test_heap_malloc_example()
  * @brief test with CUNIT of the merging memory right and left
  *
  */
-
 void test_heap_free_several()
 {
     char *heap = (char *)get_heap();
@@ -179,7 +170,6 @@ void test_heap_free_several()
  * @brief test with CUNIT of the example given in the doc
  *
  */
-
 void test_full_example()
 {
     char *heap = get_heap();
@@ -221,7 +211,6 @@ void test_full_example()
  * @brief test with CUNIT of some random allocation
  *
  */
-
 void test_heap_malloc(void)
 {
     char *p1, *p2, *p3, *p4;
@@ -252,7 +241,6 @@ void test_heap_malloc(void)
  * @brief test with CUNIT of best fit strategy
  *
  */
-
 void test_best_malloc()
 {
     t_list current_block;
@@ -287,7 +275,6 @@ void test_best_malloc()
  * @brief test with CUNIT of worst fit strategy
  *
  */
-
 void test_worst_malloc()
 {
     t_list current_block;
