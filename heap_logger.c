@@ -54,7 +54,6 @@ void read_log(void)
     size_t size;
     char action[10];
     char adress[14];
-    char trash[32];
 
     if (log_file == NULL)
     {
@@ -63,8 +62,8 @@ void read_log(void)
     }
     while (ret != EOF)
     {
-        ret = fscanf(log_file, "%s %s %s %s %lu bytes at address %s\n",
-                     trash, trash, trash, action, &size, adress);
+        ret = fscanf(log_file, "%*s %*s %*s %s %lu bytes at address %s\n",
+                     action, &size, adress);
         if (ret != EOF && strcmp(action, "malloced") == 0)
             printf("%s %ld bytes\n", adress, size);
     }
