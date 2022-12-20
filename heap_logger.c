@@ -1,6 +1,7 @@
 #include "time.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief Function to emptying the log file
@@ -51,6 +52,7 @@ void read_log(void)
     FILE *log_file = fopen("log", "r");
     int ret = 1;
     size_t size;
+    char action[10];
     char adress[14];
     char trash[32];
 
@@ -61,10 +63,9 @@ void read_log(void)
     }
     while (ret != EOF)
     {
-        ret = fscanf(log_file, "%s %s %s %s %lu %s %s %s %s\n",
-                     trash, trash, trash, trash, &size,
-                     trash, trash, trash, adress);
-        if (ret != EOF)
+        ret = fscanf(log_file, "%s %s %s %s %lu bytes at address %s\n",
+                     trash, trash, trash, action, &size, adress);
+        if (ret != EOF && strcmp(action, "malloced") == 0)
             printf("%s %ld bytes\n", adress, size);
     }
     fclose(log_file);
