@@ -63,8 +63,6 @@ void test_heap_malloc_example()
     int struct_size = sizeof(*free_block);
     int index = (char *)free_block - heap;
     strcpy(p1, "tp 1");
-    // show_heap();
-    // print_heap();
 
     CU_ASSERT_PTR_EQUAL(p1 - struct_size, heap);
 
@@ -73,8 +71,6 @@ void test_heap_malloc_example()
 
     char *p2 = heap_malloc(9);
     strcpy(p2, "tp 2");
-    // show_heap();
-    // print_heap();
 
     CU_ASSERT_PTR_EQUAL(p2, heap + index + struct_size);
     index = (char *)get_first_free_block() - heap;
@@ -84,8 +80,6 @@ void test_heap_malloc_example()
 
     char *p3 = heap_malloc(5);
     strcpy(p3, "tp 3");
-    // show_heap();
-    // print_heap();
 
     CU_ASSERT_PTR_EQUAL(p3, heap + index + struct_size);
     index = (char *)get_first_free_block() - heap;
@@ -94,8 +88,6 @@ void test_heap_malloc_example()
     CU_ASSERT_EQUAL(index, 24 + struct_size * 3);
 
     char *p4 = heap_malloc(905);
-    // show_heap();
-    // print_heap();
 
     CU_ASSERT_PTR_NULL(p4);
 

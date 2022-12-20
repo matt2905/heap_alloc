@@ -5,6 +5,7 @@ SRC			= heap_alloc.c \
 			  heap_free.c \
 			  heap_global.c \
 			  heap_list.c \
+			  heap_logger.c \
 			  heap_malloc.c \
 			  heap_sem.c \
 			  heap_strategy.c
